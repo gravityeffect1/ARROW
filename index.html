@@ -22,11 +22,11 @@
   ::-webkit-scrollbar-thumb { background: #253450; border-radius: 3px; }
   ::-webkit-scrollbar-track { background: #070d1b; }
 
-  /* ── Typography ── */
+
   .font-serif  { font-family: 'DM Serif Display', serif; }
   .font-mono   { font-family: 'DM Mono', monospace; }
 
-  /* ── Layout ── */
+
   #app { min-height: 100vh; background: #070d1b; }
 
   header {
@@ -57,11 +57,17 @@
   }
   .header-divider { height: 32px; width: 1px; background: #1a2a40; flex-shrink: 0; }
   .header-desc { font-size: 11px; color: #4a6080; line-height: 1.6; }
-  .header-source { margin-left: auto; text-align: right; }
-  .header-source .lbl { font-size: 10px; color: #3a5070; letter-spacing: 1px; margin-bottom: 2px; }
-  .header-source a { font-size: 11px; color: #4a6a8a; text-decoration: none; letter-spacing: .3px; }
+  .credits-box {
+    margin-left: auto; background: #0b1422; border: 1px solid #1a2a40;
+    border-radius: 7px; padding: 10px 14px; min-width: 220px; max-width: 260px;
+  }
+  .credits-box .lbl { font-size: 9px; color: #3a5070; letter-spacing: 1.8px; text-transform: uppercase; font-weight: 700; margin-bottom: 7px; }
+  .credits-line { font-size: 11px; color: #5a7090; line-height: 1.7; }
+  .credits-line strong { color: #8aa0bc; font-weight: 600; }
+  .credits-line a { color: #4a8a9a; text-decoration: none; font-family: 'DM Mono', monospace; font-size: 10px; }
+  .credits-line a:hover { color: #4ab3a8; }
 
-  /* ── Tab bar ── */
+
   .tabbar { display: flex; gap: 0; margin-top: 0; }
   .tab-btn {
     padding: 11px 22px; background: transparent; border: none;
@@ -73,13 +79,13 @@
   }
   .tab-btn.active { color: #4ab3a8; border-bottom-color: #4ab3a8; font-weight: 600; }
 
-  /* ── Content ── */
+ 
   .content { max-width: 1200px; margin: 0 auto; padding: 28px 40px; }
 
-  /* ── Design tab grid ── */
+
   .design-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
 
-  /* ── Panels ── */
+
   .panel {
     background: #0b1422; border: 1px solid #1a2a40;
     border-radius: 8px; padding: 14px;
@@ -328,7 +334,7 @@
   }
   .disclaimer strong { color: #4a5a70; }
 
-  /* ── Footer ── */
+ 
   footer {
     border-top: 1px solid #0f1c2e; margin-top: 40px;
     padding: 16px 40px; font-size: 11px; color: #1e2e44;
@@ -337,11 +343,10 @@
   }
   footer a { color: #253a54; text-decoration: none; }
 
-  /* ── Animations ── */
   @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
   .fade-up { animation: fadeUp .35s ease; }
 
-  /* ── Responsive ── */
+
   @media (max-width: 900px) {
     .design-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -356,7 +361,6 @@
 <body>
 <div id="app">
 
-  <!-- ══════════ HEADER ══════════ -->
   <header>
     <div class="header-inner">
       <div class="wordmark-row">
@@ -372,9 +376,17 @@
           <div>CRISPR-Cas13 guide RNA design platform</div>
           <div>Targeting SARS-CoV-2 via NCBI GenBank</div>
         </div>
-        <div class="header-source">
-          <div class="lbl">Source code</div>
-          <a href="https://github.com/gravityeffect1" target="_blank" rel="noreferrer">github.com/gravityeffect1</a>
+        <div class="credits-box">
+          <div class="lbl">Credits</div>
+          <div class="credits-line"><strong>Sara Șova</strong></div>
+          <div class="credits-line">2nd Year, Medicine &mdash; seria 7</div>
+          <div class="credits-line" style="margin-top:4px">
+            ORCID&nbsp;
+            <a href="https://orcid.org/0009-0004-2425-116X" target="_blank" rel="noreferrer">0009-0004-2425-116X</a>
+          </div>
+          <div class="credits-line" style="margin-top:2px">
+            <a href="https://github.com/gravityeffect1" target="_blank" rel="noreferrer">github.com/gravityeffect1</a>
+          </div>
         </div>
       </div>
       <div class="tabbar">
@@ -384,10 +396,10 @@
     </div>
   </header>
 
-  <!-- ══════════ CONTENT ══════════ -->
+
   <div class="content">
 
-    <!-- ── DESIGN TAB ── -->
+
     <div id="tab-design" class="design-grid">
 
       <!-- Sidebar -->
@@ -502,7 +514,7 @@
       </main>
     </div>
 
-    <!-- ── SCIENCE TAB ── -->
+  
     <div id="tab-science" style="display:none">
       <div class="science-wrapper fade-up">
         <div class="science-header">
@@ -534,9 +546,7 @@
 </div><!-- /app -->
 
 <script>
-/* ═══════════════════════════════════════════════════════════
-   BIOINFORMATICS CORE
-═══════════════════════════════════════════════════════════ */
+
 const GENOME_DB = {
   "NC_045512.2": { name: "SARS-CoV-2 (Wuhan-Hu-1, RefSeq)", length: 29903 },
   "MN908947.3":  { name: "SARS-CoV-2 (Original Wuhan)",      length: 29903 },
@@ -587,9 +597,7 @@ function simulateNCBIFetch(accession, start, end) {
   });
 }
 
-/* ═══════════════════════════════════════════════════════════
-   APPLICATION STATE
-═══════════════════════════════════════════════════════════ */
+
 let STATE = {
   guides: [], totalCands: 0, genome: null,
   sortKey: "Nucleotide_Position", sortAsc: true,
@@ -598,9 +606,7 @@ let STATE = {
   guideLen: 28,
 };
 
-/* ═══════════════════════════════════════════════════════════
-   UI HELPERS
-═══════════════════════════════════════════════════════════ */
+
 function seqHtml(seq, size) {
   const s = size || 11;
   return seq.split("").map(b => `<span class="base-${b}" style="font-size:${s}px">${b}</span>`).join("");
@@ -622,9 +628,7 @@ function updateFilterSummary() {
   document.getElementById("fs-gc").textContent = `${mn}% to ${mx}%`;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TAB SWITCHING
-═══════════════════════════════════════════════════════════ */
+
 function switchTab(tab) {
   document.querySelectorAll(".tab-btn").forEach((b,i) => {
     b.classList.toggle("active", (i===0&&tab==="design")||(i===1&&tab==="science"));
@@ -634,18 +638,13 @@ function switchTab(tab) {
   if (tab === "science" && !document.getElementById("sci-nav").children.length) renderScienceNav();
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PRESET REGIONS
-═══════════════════════════════════════════════════════════ */
+
 function setPreset(s, e) {
   document.getElementById("inp-acc").value   = "NC_045512.2";
   document.getElementById("inp-start").value = s;
   document.getElementById("inp-end").value   = e;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SHOW / HIDE STATES
-═══════════════════════════════════════════════════════════ */
 function showState(name) {
   ["idle","loading","error","done"].forEach(s => {
     const el = document.getElementById("state-" + s);
@@ -654,9 +653,7 @@ function showState(name) {
   if (name === "idle") document.getElementById("state-idle").style.display = "block";
 }
 
-/* ═══════════════════════════════════════════════════════════
-   MAIN RUN
-═══════════════════════════════════════════════════════════ */
+
 async function runAnalysis() {
   const email  = document.getElementById("inp-email").value.trim();
   const acc    = document.getElementById("inp-acc").value.trim();
@@ -841,9 +838,7 @@ function renderResults(gcMin, gcMax, hpLen) {
   renderTableBody();
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TABLE RENDERING
-═══════════════════════════════════════════════════════════ */
+
 function getVisible() {
   const filter = (document.getElementById("seq-filter") || {value:""}).value.toUpperCase();
   let arr = STATE.guides.filter(g => !filter || g.Guide_Sequence.includes(filter));
@@ -942,9 +937,7 @@ function renderDetail() {
   </div>`;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CSV EXPORT
-═══════════════════════════════════════════════════════════ */
+
 function exportCSV() {
   const cols = ["Nucleotide_Position","Guide_Sequence","GC_Content","Approx_Amino_Acid_Position"];
   const csv = [cols.join(","), ...STATE.guides.map(g => cols.map(c => g[c]).join(","))].join("\n");
@@ -953,9 +946,7 @@ function exportCSV() {
   a.click(); URL.revokeObjectURL(a.href);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   AI INTERPRETATION
-═══════════════════════════════════════════════════════════ */
+
 async function runAI() {
   if (!STATE.guides.length || STATE.aiLoading) return;
   STATE.aiLoading = true;
@@ -1004,9 +995,7 @@ async function runAI() {
   if (btn) { btn.disabled = false; btn.textContent = "AI Interpretation"; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SCIENCE TAB
-═══════════════════════════════════════════════════════════ */
+
 const SECTIONS = [
   {
     id: "background", label: "I. Background & Rationale", accent: "#4ab3a8",
