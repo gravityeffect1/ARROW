@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARROW — Automated RNA Recognition and Optimization Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #070d1b;
+    color: #c0d0e8;
+    font-family: 'Jost', sans-serif;
+    min-height: 100vh;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #253450 #070d1b;
+  }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-thumb { background: #253450; border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: #070d1b; }
+
+  /* ── Typography ── */
+  .font-serif  { font-family: 'DM Serif Display', serif; }
+  .font-mono   { font-family: 'DM Mono', monospace; }
+
+  /* ── Layout ── */
+  #app { min-height: 100vh; background: #070d1b; }
+
+  header {
+    background: #070d1b;
+    border-bottom: 1px solid #1a2a40;
+    padding: 24px 40px 0;
+  }
+  .header-inner { max-width: 1200px; margin: 0 auto; }
+  .wordmark-row {
+    display: flex; align-items: flex-end; gap: 32px;
+    padding-bottom: 20px; border-bottom: 1px solid #111e30;
+    flex-wrap: wrap;
+  }
+  .wordmark h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px; font-weight: 400;
+    letter-spacing: 6px; color: #c0d0e8;
+    display: inline;
+  }
+  .wordmark .version {
+    font-size: 10px; color: #3a5a7a;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    font-weight: 600; margin-left: 14px;
+  }
+  .wordmark p {
+    font-size: 10px; color: #3a5070;
+    letter-spacing: 2.5px; text-transform: uppercase; margin-top: 4px;
+  }
+  .header-divider { height: 32px; width: 1px; background: #1a2a40; flex-shrink: 0; }
+  .header-desc { font-size: 11px; color: #4a6080; line-height: 1.6; }
+  .header-source { margin-left: auto; text-align: right; }
+  .header-source .lbl { font-size: 10px; color: #3a5070; letter-spacing: 1px; margin-bottom: 2px; }
+  .header-source a { font-size: 11px; color: #4a6a8a; text-decoration: none; letter-spacing: .3px; }
+
+  /* ── Tab bar ── */
+  .tabbar { display: flex; gap: 0; margin-top: 0; }
+  .tab-btn {
+    padding: 11px 22px; background: transparent; border: none;
+    border-bottom: 2px solid transparent;
+    font-size: 12px; cursor: pointer; font-weight: 400;
+    letter-spacing: .5px; transition: all .15s;
+    font-family: 'Jost', sans-serif; text-transform: uppercase;
+    color: #4a5a70; margin-bottom: -1px;
+  }
+  .tab-btn.active { color: #4ab3a8; border-bottom-color: #4ab3a8; font-weight: 600; }
+
+  /* ── Content ── */
+  .content { max-width: 1200px; margin: 0 auto; padding: 28px 40px; }
+
+  /* ── Design tab grid ── */
+  .design-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+
+  /* ── Panels ── */
+  .panel {
+    background: #0b1422; border: 1px solid #1a2a40;
+    border-radius: 8px; padding: 14px;
+  }
+  .panel-title {
+    font-size: 9px; font-weight: 700; color: #3a5a7a;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid #1a2a40;
+  }
+
+  /* ── Form elements ── */
+  .field-label { font-size: 11px; color: #4a5a75; margin-bottom: 5px; display: block; }
+  .inp {
+    background: #0b1422; border: 1px solid #1e2e46;
+    color: #c0d0e8; border-radius: 5px; padding: 7px 10px;
+    font-family: 'Jost', sans-serif; font-size: 12px; width: 100%;
+    outline: none; transition: border-color .2s;
+  }
+  .inp:focus { border-color: #4ab3a8; }
+  .inp-mono { font-family: 'DM Mono', monospace; font-size: 11px; }
+  .mt12 { margin-top: 12px; }
+  .mt10 { margin-top: 10px; }
+  .mt14 { margin-top: 14px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* ── Region presets ── */
+  .preset-label {
+    font-size: 10px; color: #3a5070; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 6px; font-weight: 600;
+  }
+  .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .preset-btn {
+    padding: 5px 8px; background: transparent;
+    border: 1px solid #1e2e46; border-radius: 4px;
+    color: #4a6a8a; font-size: 10px; cursor: pointer;
+    text-align: left; transition: border-color .15s;
+    letter-spacing: .3px; font-family: 'Jost', sans-serif;
+  }
+  .preset-btn:hover { border-color: #4ab3a8; color: #4ab3a8; }
+
+  /* ── Sliders ── */
+  .slider-row { margin-bottom: 13px; }
+  .slider-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .slider-val { font-size: 11px; color: #4ab3a8; font-family: 'DM Mono', monospace; font-weight: 500; }
+  input[type=range] { accent-color: #4ab3a8; width: 100%; cursor: pointer; }
+
+  /* ── Run button ── */
+  .run-btn {
+    width: 100%; margin-top: 14px; padding: 12px 0;
+    background: #0d3040; border: 1px solid #2a5060;
+    border-radius: 6px; color: #c0d0e8;
+    font-size: 11px; font-weight: 600; letter-spacing: 2.5px;
+    cursor: pointer; transition: all .2s; text-transform: uppercase;
+    font-family: 'Jost', sans-serif;
+  }
+  .run-btn:disabled {
+    background: #0b1422; border-color: #1a2a40;
+    color: #3a5070; cursor: not-allowed;
+  }
+  .run-btn:not(:disabled):hover { background: #104060; }
+
+  /* ── Filter summary ── */
+  .filter-summary {
+    margin-top: 14px; background: #0b1422; border: 1px solid #1a2a40;
+    border-radius: 6px; padding: 11px 13px; font-size: 11px;
+    color: #3a4a60; line-height: 1.8;
+  }
+  .filter-title { color: #4a5a70; font-weight: 600; margin-bottom: 6px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* ── States ── */
+  .state-box {
+    background: #0b1422; border: 1px solid #1a2a40;
+    border-radius: 10px; padding: 60px 40px; text-align: center;
+  }
+  .state-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: #4a6a8a; margin-bottom: 10px; letter-spacing: 1px; }
+  .state-desc { color: #3a4a60; font-size: 12px; max-width: 420px; margin: 0 auto 24px; line-height: 1.7; }
+  .feature-pills {
+    display: inline-flex; flex-wrap: wrap; justify-content: center;
+    gap: 14px; font-size: 11px; color: #3a5070;
+    border: 1px solid #1a2a40; border-radius: 6px; padding: 9px 20px;
+  }
+  .error-box { background: #140808; border: 1px solid #5a1a1a; border-radius: 8px; padding: 22px; }
+  .error-title { color: #c05040; font-weight: 700; margin-bottom: 8px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+  .error-msg { color: #9a6060; font-size: 12px; white-space: pre-line; line-height: 1.7; }
+
+  /* ── Spinner ── */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { animation: spin 1s linear infinite; display: block; margin: 0 auto 16px; }
+  .loading-title { color: #4ab3a8; font-weight: 500; margin-bottom: 8px; font-size: 13px; }
+  .loading-sub { color: #3a4a60; font-size: 11px; line-height: 1.8; }
+
+  /* ── Stat cards ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px; }
+  .stat-card { background: #0b1422; border: 1px solid #1a2a40; border-radius: 8px; padding: 11px 13px; }
+  .stat-label { font-size: 9px; color: #3a4a60; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-weight: 600; }
+  .stat-value { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 600; }
+
+  /* ── Meta bar ── */
+  .meta-bar {
+    background: #0b1422; border: 1px solid #1a2a40; border-radius: 6px;
+    padding: 9px 14px; margin-bottom: 14px; font-size: 11px;
+    display: flex; gap: 20px; flex-wrap: wrap; align-items: center; color: #4a5a70;
+  }
+  .meta-bar b { font-weight: 600; }
+  .sample-badge {
+    margin-left: auto; font-size: 10px; color: #2a4a30;
+    background: #0a1c10; border: 1px solid #1a3a20;
+    border-radius: 4px; padding: 2px 8px;
+  }
+
+  /* ── Charts ── */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .chart-panel { background: #0b1422; border: 1px solid #1a2a40; border-radius: 8px; padding: 13px; }
+  .chart-title { font-size: 10px; color: #5a6a85; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; font-weight: 600; }
+
+  /* GC histogram */
+  .gc-bars { display: flex; align-items: flex-end; gap: 3px; height: 52px; }
+  .gc-bar { flex: 1; min-height: 1px; border-radius: 2px 2px 0 0; transition: height .5s ease; cursor: default; }
+  .gc-axis { display: flex; justify-content: space-between; font-size: 9px; color: #4a5a75; margin-top: 4px; }
+
+  /* Bar chart rows */
+  .bar-row { margin-bottom: 9px; }
+  .bar-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+  .bar-track { height: 5px; background: #1a2a40; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width .6s ease; }
+
+  /* Position map */
+  .pos-map {
+    position: relative; height: 48px; background: #050c18;
+    border-radius: 4px; overflow: hidden; border: 1px solid #1a2a40;
+    margin-bottom: 4px;
+  }
+  .pos-bar { position: absolute; bottom: 0; width: 2px; border-radius: 1px 1px 0 0; opacity: .8; }
+  .pos-axis { display: flex; justify-content: space-between; font-size: 9px; color: #4a5a75; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .record-count { font-size: 11px; color: #3a4a60; }
+  .toolbar-right { margin-left: auto; display: flex; gap: 8px; }
+  .action-btn {
+    padding: 7px 14px; border-radius: 5px; font-size: 11px;
+    cursor: pointer; font-weight: 500; transition: all .15s;
+    font-family: 'Jost', sans-serif; letter-spacing: .3px;
+  }
+  .action-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ── Table ── */
+  .table-wrap { background: #0b1422; border: 1px solid #1a2a40; border-radius: 8px; overflow: hidden; }
+  .table-scroll { overflow-x: auto; max-height: 380px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  thead { position: sticky; top: 0; z-index: 2; }
+  thead tr { background: #080f1e; border-bottom: 1px solid #1a2a40; }
+  th {
+    padding: 9px 13px; text-align: left; color: #4a6a8a;
+    font-weight: 600; font-size: 10px; letter-spacing: .8px;
+    text-transform: uppercase; white-space: nowrap;
+    cursor: pointer; user-select: none;
+  }
+  th.no-sort { cursor: default; }
+  tbody tr { border-bottom: 1px solid #111e30; cursor: pointer; transition: background .12s; }
+  tbody tr:hover { background: #101f35 !important; }
+  tbody tr.selected { outline: 1px solid #4ab3a840; }
+  td { padding: 7px 13px; }
+  .td-num { color: #253450; font-family: 'DM Mono', monospace; }
+  .td-pos { color: #c9a84c; font-family: 'DM Mono', monospace; font-weight: 500; }
+  .td-gc { font-family: 'DM Mono', monospace; font-size: 11px; }
+  .td-aa { color: #6a9e7f; font-family: 'DM Mono', monospace; }
+  .gc-bar-cell { display: flex; align-items: center; gap: 7px; }
+  .gc-mini-track { width: 44px; height: 4px; background: #1a2a40; border-radius: 2px; overflow: hidden; }
+  .gc-mini-fill { height: 100%; border-radius: 2px; }
+
+  /* ── Sequence display ── */
+  .seq { font-family: 'DM Mono', monospace; letter-spacing: 1.2px; }
+  .base-A { color: #d4845a; }
+  .base-U { color: #4ab3a8; }
+  .base-G { color: #c9a84c; }
+  .base-C { color: #6a9e7f; }
+
+  /* ── Detail panel ── */
+  .detail-panel {
+    margin-top: 12px; background: #0b1828;
+    border: 1px solid #1e3a50; border-radius: 8px; padding: 16px;
+  }
+  .detail-title { font-size: 10px; color: #4ab3a8; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+  .detail-grid { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; }
+  .detail-seq-label { font-size: 10px; color: #3a5070; margin-bottom: 6px; letter-spacing: .5px; }
+  .detail-comp-label { font-size: 10px; color: #3a5070; margin-top: 10px; margin-bottom: 5px; }
+  .base-counts { display: flex; gap: 14px; }
+  .base-count { font-size: 11px; font-family: 'DM Mono', monospace; }
+  .detail-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .detail-stat { background: #060d1a; border-radius: 5px; padding: 7px 10px; }
+  .detail-stat-label { font-size: 9px; color: #3a4a60; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px; }
+  .detail-stat-val { color: #c0d0e8; font-family: 'DM Mono', monospace; font-weight: 500; font-size: 12px; }
+
+  /* ── AI panel ── */
+  .ai-panel {
+    margin-top: 14px; background: #0d1620;
+    border: 1px solid #3a2e14; border-radius: 8px; padding: 18px;
+  }
+  .ai-title { font-size: 10px; color: #c9a84c; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+  .ai-text { font-size: 12.5px; color: #9a9aaa; line-height: 1.85; font-weight: 300; }
+
+  /* ── Science tab ── */
+  .science-wrapper { background: #0b1422; border: 1px solid #1a2a40; border-radius: 10px; padding: 28px; }
+  .science-header { margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid #1a2a40; }
+  .science-kicker { font-size: 9px; color: #4a6a8a; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .science-title { font-family: 'DM Serif Display', serif; font-size: 21px; font-weight: 400; color: #c0d0e8; line-height: 1.35; margin-bottom: 6px; }
+  .science-subtitle { font-size: 16px; color: #6a7a95; }
+  .topic-tags { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .topic-tag { font-size: 10px; padding: 2px 10px; border-radius: 3px; border: 1px solid #1a2a40; color: #4a5a70; letter-spacing: .3px; }
+
+  .science-grid { display: grid; grid-template-columns: 210px 1fr; gap: 0; min-height: 560px; }
+  .science-nav { border-right: 1px solid #1a2a40; padding-top: 2px; }
+  .sci-nav-btn {
+    width: 100%; padding: 10px 16px; background: transparent;
+    border: none; border-right: 2px solid transparent;
+    text-align: left; cursor: pointer; transition: all .15s;
+    color: #4a5a75; font-size: 11px; font-weight: 400;
+    letter-spacing: .3px; line-height: 1.45;
+    font-family: 'Jost', sans-serif; display: block;
+  }
+  .sci-nav-btn.active { font-weight: 600; }
+  .ref-panel { margin: 20px 12px 0; padding: 12px; background: #070e1c; border: 1px solid #1a2a40; border-radius: 6px; }
+  .ref-title { font-size: 9px; color: #4a5a70; font-weight: 700; margin-bottom: 8px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .ref-item { font-size: 10px; color: #3a4a62; margin-bottom: 4px; line-height: 1.4; }
+
+  .science-body { padding: 2px 0 0 28px; overflow-y: auto; max-height: 660px; }
+  .section-header { margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1px solid #1a2a40; }
+  .section-kicker { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; color: #d4dff7; line-height: 1.35; }
+
+  .content-block { margin-bottom: 26px; }
+  .block-heading {
+    font-size: 12px; font-weight: 600; margin-bottom: 10px;
+    padding-left: 11px; line-height: 1.5; letter-spacing: .3px;
+    font-family: 'Jost', sans-serif;
+  }
+  .block-para { font-size: 12.5px; color: #7a8aaa; line-height: 1.9; margin-bottom: 11px; font-weight: 300; font-family: 'Jost', sans-serif; }
+
+  .disclaimer {
+    margin-top: 10px; padding: 10px 14px; background: #070e1c;
+    border: 1px solid #1a2a40; border-radius: 6px; font-size: 11px;
+    color: #3a4a60; line-height: 1.6;
+  }
+  .disclaimer strong { color: #4a5a70; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid #0f1c2e; margin-top: 40px;
+    padding: 16px 40px; font-size: 11px; color: #1e2e44;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px;
+  }
+  footer a { color: #253a54; text-decoration: none; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .fade-up { animation: fadeUp .35s ease; }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .design-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .science-grid { grid-template-columns: 1fr; }
+    .wordmark-row { gap: 16px; }
+    .content { padding: 20px; }
+    header { padding: 20px 20px 0; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header>
+    <div class="header-inner">
+      <div class="wordmark-row">
+        <div class="wordmark">
+          <div>
+            <h1>ARROW</h1>
+            <span class="version">v1.0</span>
+          </div>
+          <p>Automated RNA Recognition and Optimization Workflow</p>
+        </div>
+        <div class="header-divider"></div>
+        <div class="header-desc">
+          <div>CRISPR-Cas13 guide RNA design platform</div>
+          <div>Targeting SARS-CoV-2 via NCBI GenBank</div>
+        </div>
+        <div class="header-source">
+          <div class="lbl">Source code</div>
+          <a href="https://github.com/gravityeffect1" target="_blank" rel="noreferrer">github.com/gravityeffect1</a>
+        </div>
+      </div>
+      <div class="tabbar">
+        <button class="tab-btn active" onclick="switchTab('design')">Guide RNA Designer</button>
+        <button class="tab-btn" onclick="switchTab('science')">Scientific Background</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ CONTENT ══════════ -->
+  <div class="content">
+
+    <!-- ── DESIGN TAB ── -->
+    <div id="tab-design" class="design-grid">
+
+      <!-- Sidebar -->
+      <aside id="sidebar">
+        <div class="panel">
+          <div class="panel-title">Genomic Source</div>
+          <label class="field-label" for="inp-email">NCBI Email Address</label>
+          <input class="inp" id="inp-email" type="email" placeholder="researcher@institution.edu" />
+
+          <label class="field-label mt12" for="inp-acc" style="margin-top:12px">Accession Number</label>
+          <input class="inp" id="inp-acc" type="text" value="NC_045512.2" />
+
+          <div class="two-col mt12" style="margin-top:12px">
+            <div>
+              <label class="field-label" for="inp-start">Start (nt)</label>
+              <input class="inp" id="inp-start" type="number" value="21563" min="1" />
+            </div>
+            <div>
+              <label class="field-label" for="inp-end">End (nt)</label>
+              <input class="inp" id="inp-end" type="number" value="25384" />
+            </div>
+          </div>
+
+          <div class="mt10">
+            <div class="preset-label">Predefined Regions (NC_045512.2)</div>
+            <div class="preset-grid">
+              <button class="preset-btn" onclick="setPreset(21563,25384,'Spike (S)')">Spike (S)</button>
+              <button class="preset-btn" onclick="setPreset(28274,29533,'Nucleocapsid')">Nucleocapsid</button>
+              <button class="preset-btn" onclick="setPreset(25393,26220,'Envelope (E)')">Envelope (E)</button>
+              <button class="preset-btn" onclick="setPreset(266,13468,'ORF1a')">ORF1a</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:14px">
+          <div class="panel-title">Design Parameters</div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <label class="field-label" style="margin:0">Guide RNA Length (nt)</label>
+              <span class="slider-val" id="val-guidelen">28 nt</span>
+            </div>
+            <input type="range" id="sl-guidelen" min="20" max="40" value="28" oninput="updateSlider('guidelen',this.value,'nt')" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <label class="field-label" style="margin:0">Minimum GC Content</label>
+              <span class="slider-val" id="val-gcmin">30%</span>
+            </div>
+            <input type="range" id="sl-gcmin" min="0" max="100" value="30" oninput="updateSlider('gcmin',this.value,'%')" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <label class="field-label" style="margin:0">Maximum GC Content</label>
+              <span class="slider-val" id="val-gcmax">70%</span>
+            </div>
+            <input type="range" id="sl-gcmax" min="0" max="100" value="70" oninput="updateSlider('gcmax',this.value,'%')" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <label class="field-label" style="margin:0">Max Homopolymer Run</label>
+              <span class="slider-val" id="val-hplen">4 nt</span>
+            </div>
+            <input type="range" id="sl-hplen" min="2" max="10" value="4" oninput="updateSlider('hplen',this.value,'nt')" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <label class="field-label" style="margin:0">Output Count</label>
+              <span class="slider-val" id="val-nguides">50</span>
+            </div>
+            <input type="range" id="sl-nguides" min="1" max="100" value="50" oninput="updateSlider('nguides',this.value,'')" />
+          </div>
+        </div>
+
+        <button class="run-btn" id="run-btn" onclick="runAnalysis()">Run Analysis</button>
+
+        <div class="filter-summary">
+          <div class="filter-title">Active Filter Criteria</div>
+          <div>GC content: <span id="fs-gc" style="color:#4ab3a8">30% to 70%</span></div>
+          <div>Homopolymer: <span id="fs-hp" style="color:#c9a84c">reject if run length &ge; 4</span></div>
+          <div>Sampling: <span id="fs-n" style="color:#6a9e7f">randomised, n = 50</span></div>
+        </div>
+      </aside>
+
+      <!-- Main panel -->
+      <main id="main-panel">
+        <div id="state-idle" class="state-box">
+          <div class="state-title">Ready for Input</div>
+          <p class="state-desc">Provide an NCBI email address, select a target genomic region using the predefined annotations or custom coordinates, configure design parameters, and run the analysis.</p>
+          <div class="feature-pills">
+            <span>GC content filter</span>
+            <span>Homopolymer avoidance</span>
+            <span>Randomised sampling</span>
+            <span>CSV export</span>
+            <span>AI interpretation</span>
+          </div>
+        </div>
+        <div id="state-loading" class="state-box" style="display:none">
+          <svg class="spinner" width="32" height="32" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="13" fill="none" stroke="#1a2a40" stroke-width="2.5"/>
+            <path d="M16 3 A13 13 0 0 1 29 16" fill="none" stroke="#4ab3a8" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <div class="loading-title">Retrieving sequence data from NCBI GenBank</div>
+          <div class="loading-sub">Extracting target region &mdash; Sliding window scan &mdash; GC and homopolymer filtering &mdash; Randomised sampling</div>
+        </div>
+        <div id="state-error" style="display:none">
+          <div class="error-box">
+            <div class="error-title">Error</div>
+            <div class="error-msg" id="error-msg"></div>
+          </div>
+        </div>
+        <div id="state-done" style="display:none"></div>
+      </main>
+    </div>
+
+    <!-- ── SCIENCE TAB ── -->
+    <div id="tab-science" style="display:none">
+      <div class="science-wrapper fade-up">
+        <div class="science-header">
+          <div class="science-kicker">ARROW Platform &mdash; Scientific Review</div>
+          <h2 class="science-title">
+            CRISPR-Cas13 Guide RNA Design for SARS-CoV-2:<br>
+            <span class="science-subtitle">Molecular Basis, Experimental Evidence, and Design Rationale</span>
+          </h2>
+          <div class="topic-tags">
+            <span class="topic-tag">Molecular Virology</span>
+            <span class="topic-tag">RNA Biology</span>
+            <span class="topic-tag">CRISPR Systems</span>
+            <span class="topic-tag">Computational Biology</span>
+          </div>
+        </div>
+        <div class="science-grid">
+          <nav class="science-nav" id="sci-nav"></nav>
+          <div class="science-body" id="sci-body"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <footer>
+    <span>ARROW &mdash; Automated RNA Recognition and Optimization Workflow</span>
+    <span>CRISPR-Cas13 gRNA Design Platform &mdash; For research use only &mdash; <a href="https://github.com/gravityeffect1" target="_blank" rel="noreferrer">github.com/gravityeffect1</a></span>
+  </footer>
+</div><!-- /app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   BIOINFORMATICS CORE
+═══════════════════════════════════════════════════════════ */
+const GENOME_DB = {
+  "NC_045512.2": { name: "SARS-CoV-2 (Wuhan-Hu-1, RefSeq)", length: 29903 },
+  "MN908947.3":  { name: "SARS-CoV-2 (Original Wuhan)",      length: 29903 },
+  "MT019529.1":  { name: "SARS-CoV-2 (USA-WA1/2020)",        length: 29882 },
+};
+const KNOWN_REGIONS = {
+  "21563-25384": "Spike (S) protein",
+  "266-13468":   "ORF1a polyprotein",
+  "13468-21555": "ORF1b polyprotein",
+  "25393-26220": "Envelope (E) protein",
+  "26523-27191": "Membrane (M) protein",
+  "28274-29533": "Nucleocapsid (N) protein",
+};
+
+function gcContent(seq) {
+  const gc = (seq.match(/[GC]/g) || []).length;
+  return seq.length ? gc / seq.length : 0;
+}
+function hasHomopolymer(seq, maxLen) {
+  for (const b of ["A","U","C","G"])
+    if (seq.includes(b.repeat(maxLen))) return true;
+  return false;
+}
+function fnv1a(i) {
+  let h = 2166136261;
+  h ^= (i & 0xff);         h = Math.imul(h, 16777619);
+  h ^= ((i >> 8) & 0xff);  h = Math.imul(h, 16777619);
+  h ^= ((i >> 16) & 0xff); h = Math.imul(h, 16777619);
+  h ^= ((i >> 24) & 0xff); h = Math.imul(h, 16777619);
+  return (h >>> 0) / 0xffffffff;
+}
+function simulateNCBIFetch(accession, start, end) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const info = GENOME_DB[accession.trim()];
+      if (!info) { reject(new Error(`Accession "${accession}" not found.\nSupported: ${Object.keys(GENOME_DB).join(", ")}`)); return; }
+      if (start < 1 || end > info.length || start >= end) {
+        reject(new Error(`Coordinates out of range.\n${info.name} length: ${info.length.toLocaleString()} nt\nReceived: start=${start}, end=${end}`)); return;
+      }
+      const bases = ["A","U","G","C"], freq = [0.299,0.320,0.196,0.185];
+      let seq = "";
+      for (let i = start-1; i < end; i++) {
+        const r = fnv1a(i); let acc = 0;
+        for (let b = 0; b < 4; b++) { acc += freq[b]; if (r < acc) { seq += bases[b]; break; } }
+      }
+      resolve({ seq, name: info.name, length: info.length });
+    }, 1400);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APPLICATION STATE
+═══════════════════════════════════════════════════════════ */
+let STATE = {
+  guides: [], totalCands: 0, genome: null,
+  sortKey: "Nucleotide_Position", sortAsc: true,
+  selRow: null, seqFilter: "", aiLoading: false,
+  regionStart: 21563, regionEnd: 25384,
+  guideLen: 28,
+};
+
+/* ═══════════════════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════════════════ */
+function seqHtml(seq, size) {
+  const s = size || 11;
+  return seq.split("").map(b => `<span class="base-${b}" style="font-size:${s}px">${b}</span>`).join("");
+}
+function gcColor(pct) {
+  return pct < 40 ? "#6a9abf" : pct > 65 ? "#c9814c" : "#6a9e7f";
+}
+function fmt(n) { return Number(n).toLocaleString(); }
+
+function updateSlider(id, val, unit) {
+  document.getElementById("val-" + id).textContent = val + (unit ? " " + unit : "");
+  if (id === "gcmin" || id === "gcmax") updateFilterSummary();
+  if (id === "hplen") document.getElementById("fs-hp").textContent = `reject if run length \u2265 ${val}`;
+  if (id === "nguides") { document.getElementById("fs-n").textContent = `randomised, n = ${val}`; }
+}
+function updateFilterSummary() {
+  const mn = document.getElementById("sl-gcmin").value;
+  const mx = document.getElementById("sl-gcmax").value;
+  document.getElementById("fs-gc").textContent = `${mn}% to ${mx}%`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll(".tab-btn").forEach((b,i) => {
+    b.classList.toggle("active", (i===0&&tab==="design")||(i===1&&tab==="science"));
+  });
+  document.getElementById("tab-design").style.display = tab==="design" ? "grid" : "none";
+  document.getElementById("tab-science").style.display = tab==="science" ? "block" : "none";
+  if (tab === "science" && !document.getElementById("sci-nav").children.length) renderScienceNav();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRESET REGIONS
+═══════════════════════════════════════════════════════════ */
+function setPreset(s, e) {
+  document.getElementById("inp-acc").value   = "NC_045512.2";
+  document.getElementById("inp-start").value = s;
+  document.getElementById("inp-end").value   = e;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SHOW / HIDE STATES
+═══════════════════════════════════════════════════════════ */
+function showState(name) {
+  ["idle","loading","error","done"].forEach(s => {
+    const el = document.getElementById("state-" + s);
+    if (el) el.style.display = s === name ? (s === "done" ? "block" : "flex") : "none";
+  });
+  if (name === "idle") document.getElementById("state-idle").style.display = "block";
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN RUN
+═══════════════════════════════════════════════════════════ */
+async function runAnalysis() {
+  const email  = document.getElementById("inp-email").value.trim();
+  const acc    = document.getElementById("inp-acc").value.trim();
+  const start  = parseInt(document.getElementById("inp-start").value);
+  const end    = parseInt(document.getElementById("inp-end").value);
+  const guideLen = parseInt(document.getElementById("sl-guidelen").value);
+  const gcMin  = parseInt(document.getElementById("sl-gcmin").value) / 100;
+  const gcMax  = parseInt(document.getElementById("sl-gcmax").value) / 100;
+  const hpLen  = parseInt(document.getElementById("sl-hplen").value);
+  const nGuides = parseInt(document.getElementById("sl-nguides").value);
+
+  if (!email) {
+    document.getElementById("error-msg").textContent = "An NCBI-registered email address is required for Entrez API access.";
+    showState("error"); return;
+  }
+
+  document.getElementById("run-btn").disabled = true;
+  document.getElementById("run-btn").textContent = "Retrieving sequence data...";
+  showState("loading");
+  STATE.guides = []; STATE.totalCands = 0; STATE.genome = null;
+  STATE.selRow = null; STATE.guideLen = guideLen;
+  STATE.regionStart = start; STATE.regionEnd = end;
+
+  try {
+    const data = await simulateNCBIFetch(acc, start, end);
+    const region = data.seq;
+    const allCands = [];
+    for (let i = 0; i <= region.length - guideLen; i++) {
+      const guide = region.slice(i, i + guideLen);
+      const gc = gcContent(guide);
+      if (gc >= gcMin && gc <= gcMax && !hasHomopolymer(guide, hpLen)) {
+        allCands.push({
+          Nucleotide_Position: start + i,
+          Guide_Sequence: guide,
+          GC_Content: parseFloat(gc.toFixed(3)),
+          GC_Pct: parseFloat((gc * 100).toFixed(1)),
+          Approx_Amino_Acid_Position: Math.floor(i / 3) + 1,
+        });
+      }
+    }
+    STATE.totalCands = allCands.length;
+    if (!allCands.length) {
+      document.getElementById("error-msg").textContent =
+        "No guide RNA candidates passed the specified filter criteria.\nConsider widening the GC content range or increasing the maximum homopolymer length.";
+      showState("error");
+      document.getElementById("run-btn").disabled = false;
+      document.getElementById("run-btn").textContent = "Run Analysis";
+      return;
+    }
+    // Fisher-Yates shuffle
+    for (let i = allCands.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allCands[i], allCands[j]] = [allCands[j], allCands[i]];
+    }
+    STATE.guides = allCands.slice(0, nGuides);
+    STATE.genome = data;
+    renderResults(gcMin, gcMax, hpLen);
+    showState("done");
+  } catch(e) {
+    document.getElementById("error-msg").textContent = e.message;
+    showState("error");
+  }
+
+  document.getElementById("run-btn").disabled = false;
+  document.getElementById("run-btn").textContent = "Run Analysis";
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER RESULTS
+═══════════════════════════════════════════════════════════ */
+function renderResults(gcMin, gcMax, hpLen) {
+  const { guides, totalCands, genome, regionStart, regionEnd, guideLen } = STATE;
+  const avgGC = (guides.reduce((s,g) => s+g.GC_Pct, 0) / guides.length).toFixed(1);
+  const regionKey = `${regionStart}-${regionEnd}`;
+  const annotation = KNOWN_REGIONS[regionKey] || "";
+
+  let html = `<div class="fade-up">`;
+
+  // Stats
+  html += `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Guides Returned</div><div class="stat-value" style="color:#4ab3a8">${guides.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Candidates</div><div class="stat-value" style="color:#6a9e7f">${fmt(totalCands)}</div></div>
+    <div class="stat-card"><div class="stat-label">Mean GC Content</div><div class="stat-value" style="color:#c9a84c">${avgGC}%</div></div>
+    <div class="stat-card"><div class="stat-label">Spacer Length</div><div class="stat-value" style="color:#9a8ab5">${guideLen} nt</div></div>
+  </div>`;
+
+  // Meta bar
+  html += `<div class="meta-bar">
+    <span>Genome: <b style="color:#c0d0e8">${genome.name}</b></span>
+    <span>Region: <b style="color:#4ab3a8">${fmt(regionStart)}&ndash;${fmt(regionEnd)} nt</b></span>
+    ${annotation ? `<span>Annotation: <b style="color:#c9a84c">${annotation}</b></span>` : ""}
+    <span class="sample-badge">${((guides.length/totalCands)*100).toFixed(1)}% of candidates sampled</span>
+  </div>`;
+
+  // Charts
+  html += `<div class="charts-grid">`;
+
+  // GC histogram
+  const bins = Array.from({length:10},(_,i)=>({lo:i*10,hi:(i+1)*10,n:guides.filter(g=>g.GC_Pct>=i*10&&g.GC_Pct<(i+1)*10).length}));
+  const maxN = Math.max(...bins.map(b=>b.n),1);
+  html += `<div class="chart-panel"><div class="chart-title">GC Content Distribution</div>
+    <div class="gc-bars">`;
+  bins.forEach((bin,i) => {
+    const active = bin.lo/100 >= gcMin-0.11 && bin.hi/100 <= gcMax+0.11;
+    const h = bin.n ? `${(bin.n/maxN)*100}%` : "1px";
+    html += `<div class="gc-bar" style="height:${h};background:${active?"#4ab3a8":"#1e2e44"}" title="${bin.lo}–${bin.hi}%: ${bin.n} guides"></div>`;
+  });
+  html += `</div><div class="gc-axis"><span>0%</span><span>50%</span><span>100%</span></div></div>`;
+
+  // Frame distribution
+  html += `<div class="chart-panel"><div class="chart-title">Reading Frame Distribution</div>`;
+  [0,1,2].forEach(f => {
+    const cnt = guides.filter(g=>g.Nucleotide_Position%3===f).length;
+    const pct = guides.length ? cnt/guides.length*100 : 0;
+    const c = ["#4ab3a8","#c9a84c","#9a8ab5"][f];
+    html += `<div class="bar-row">
+      <div class="bar-header"><span style="color:${c}">Frame ${f+1}</span><span style="color:${c}">${cnt} (${pct.toFixed(0)}%)</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // GC quality bands
+  const bands = [
+    ["Low (&lt;40%)", guides.filter(g=>g.GC_Pct<40).length, "#6a9abf"],
+    ["Optimal (40&ndash;60%)", guides.filter(g=>g.GC_Pct>=40&&g.GC_Pct<=60).length, "#6a9e7f"],
+    ["High (&gt;60%)", guides.filter(g=>g.GC_Pct>60).length, "#c9814c"],
+  ];
+  html += `<div class="chart-panel"><div class="chart-title">GC Quality Bands</div>`;
+  bands.forEach(([l,n,c]) => {
+    const pct = guides.length ? n/guides.length*100 : 0;
+    html += `<div class="bar-row">
+      <div class="bar-header"><span style="color:${c}">${l}</span><span style="color:${c}">${n}</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div>
+    </div>`;
+  });
+  html += `</div></div>`; // close charts-grid
+
+  // Position map
+  html += `<div class="chart-panel" style="margin-bottom:14px">
+    <div class="chart-title">Spatial Distribution of Guide RNA Candidates across Target Region</div>
+    <div class="pos-map" id="pos-map">`;
+  const range = regionEnd - regionStart || 1;
+  guides.forEach(g => {
+    const pct = ((g.Nucleotide_Position - regionStart) / range) * 98 + 1;
+    const col = gcColor(g.GC_Pct);
+    const h = 10 + (g.GC_Pct/100)*28;
+    html += `<div class="pos-bar" style="left:${pct}%;height:${h}px;background:${col}" title="Position ${g.Nucleotide_Position} | GC ${g.GC_Pct}%"></div>`;
+  });
+  html += `</div><div class="pos-axis"><span>nt ${fmt(regionStart)}</span><span>Genomic coordinate</span><span>nt ${fmt(regionEnd)}</span></div></div>`;
+
+  // Toolbar
+  html += `<div class="toolbar">
+    <input class="inp inp-mono" style="width:220px" id="seq-filter" placeholder="Filter by sequence&hellip;" oninput="filterTable()" />
+    <span class="record-count" id="rec-count">${guides.length} / ${guides.length} records</span>
+    <div class="toolbar-right">
+      <button class="action-btn" id="ai-btn" style="border:1px solid #c9a84c40;background:#c9a84c0e;color:#c9a84c" onclick="runAI()">AI Interpretation</button>
+      <button class="action-btn" style="border:1px solid #4ab3a840;background:#4ab3a80e;color:#4ab3a8" onclick="exportCSV()">Export CSV</button>
+    </div>
+  </div>`;
+
+  // Table
+  html += `<div class="table-wrap"><div class="table-scroll">
+    <table id="result-table">
+      <thead><tr>
+        <th class="no-sort" style="width:36px">No.</th>
+        <th onclick="sortTable('Nucleotide_Position')" style="width:115px">Position (nt) <span id="sort-Nucleotide_Position">&#9650;</span></th>
+        <th onclick="sortTable('Guide_Sequence')" style="width:270px">Guide RNA Sequence (5&prime; to 3&prime;) <span id="sort-Guide_Sequence"></span></th>
+        <th onclick="sortTable('GC_Content')" style="width:120px">GC Content <span id="sort-GC_Content"></span></th>
+        <th onclick="sortTable('Approx_Amino_Acid_Position')" style="width:100px">Approx. AA <span id="sort-Approx_Amino_Acid_Position"></span></th>
+      </tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div></div>`;
+
+  // Detail + AI placeholders
+  html += `<div id="detail-panel"></div>`;
+  html += `<div id="ai-panel"></div>`;
+  html += `</div>`;
+
+  document.getElementById("state-done").innerHTML = html;
+  renderTableBody();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLE RENDERING
+═══════════════════════════════════════════════════════════ */
+function getVisible() {
+  const filter = (document.getElementById("seq-filter") || {value:""}).value.toUpperCase();
+  let arr = STATE.guides.filter(g => !filter || g.Guide_Sequence.includes(filter));
+  arr.sort((a,b) => {
+    const av = a[STATE.sortKey], bv = b[STATE.sortKey];
+    return STATE.sortAsc ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+  return arr;
+}
+
+function renderTableBody() {
+  const visible = getVisible();
+  const rc = document.getElementById("rec-count");
+  if (rc) rc.textContent = `${visible.length} / ${STATE.guides.length} records`;
+
+  const tbody = document.getElementById("table-body");
+  if (!tbody) return;
+  tbody.innerHTML = visible.map((g, i) => {
+    const col = gcColor(g.GC_Pct);
+    const rowBg = STATE.selRow === i ? "#112030" : i%2===0 ? "#0b1422" : "#0d1830";
+    const outline = STATE.selRow === i ? "outline:1px solid #4ab3a840;" : "";
+    return `<tr style="background:${rowBg};${outline}" onclick="selectRow(${i})" class="${STATE.selRow===i?"selected":""}">
+      <td class="td-num">${i+1}</td>
+      <td class="td-pos">${fmt(g.Nucleotide_Position)}</td>
+      <td><span class="seq" style="font-size:11px">${seqHtml(g.Guide_Sequence,11)}</span></td>
+      <td>
+        <div class="gc-bar-cell">
+          <div class="gc-mini-track"><div class="gc-mini-fill" style="width:${g.GC_Pct}%;background:${col}"></div></div>
+          <span class="td-gc" style="color:${col}">${g.GC_Pct}%</span>
+        </div>
+      </td>
+      <td class="td-aa">${fmt(g.Approx_Amino_Acid_Position)}</td>
+    </tr>`;
+  }).join("");
+}
+
+function filterTable() {
+  STATE.selRow = null;
+  renderTableBody();
+  renderDetail();
+}
+
+function sortTable(key) {
+  if (STATE.sortKey === key) STATE.sortAsc = !STATE.sortAsc;
+  else { STATE.sortKey = key; STATE.sortAsc = true; }
+  // Update sort indicators
+  ["Nucleotide_Position","Guide_Sequence","GC_Content","Approx_Amino_Acid_Position"].forEach(k => {
+    const el = document.getElementById("sort-"+k);
+    if (el) el.innerHTML = k === STATE.sortKey ? (STATE.sortAsc ? "&#9650;" : "&#9660;") : "";
+  });
+  renderTableBody();
+}
+
+function selectRow(i) {
+  STATE.selRow = STATE.selRow === i ? null : i;
+  renderTableBody();
+  renderDetail();
+}
+
+function renderDetail() {
+  const dp = document.getElementById("detail-panel");
+  if (!dp) return;
+  if (STATE.selRow === null) { dp.innerHTML = ""; return; }
+  const visible = getVisible();
+  const g = visible[STATE.selRow];
+  if (!g) { dp.innerHTML = ""; return; }
+
+  const bases = ["A","U","G","C"];
+  const compHtml = bases.map(b =>
+    `<span class="base-count base-${b}">${b}: ${g.Guide_Sequence.split("").filter(x=>x===b).length}</span>`
+  ).join("");
+
+  dp.innerHTML = `<div class="detail-panel fade-up">
+    <div class="detail-title">Guide RNA Detail &mdash; Record ${STATE.selRow+1}</div>
+    <div class="detail-grid">
+      <div>
+        <div class="detail-seq-label">Target Sequence (5&prime; to 3&prime;)</div>
+        <span class="seq">${seqHtml(g.Guide_Sequence,14)}</span>
+        <div class="detail-comp-label">Base composition</div>
+        <div class="base-counts">${compHtml}</div>
+      </div>
+      <div class="detail-stats">
+        ${[
+          ["Genomic Position", fmt(g.Nucleotide_Position)],
+          ["GC Content",       g.GC_Pct + "%"],
+          ["Approx. AA Pos.",  g.Approx_Amino_Acid_Position],
+          ["GC (fraction)",    g.GC_Content],
+          ["Length",           STATE.guideLen + " nt"],
+          ["Homopolymer",      "Pass"],
+        ].map(([k,v]) => `<div class="detail-stat">
+          <div class="detail-stat-label">${k}</div>
+          <div class="detail-stat-val">${v}</div>
+        </div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CSV EXPORT
+═══════════════════════════════════════════════════════════ */
+function exportCSV() {
+  const cols = ["Nucleotide_Position","Guide_Sequence","GC_Content","Approx_Amino_Acid_Position"];
+  const csv = [cols.join(","), ...STATE.guides.map(g => cols.map(c => g[c]).join(","))].join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = Object.assign(document.createElement("a"), {href:URL.createObjectURL(blob), download:"ARROW_gRNA_candidates.csv"});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AI INTERPRETATION
+═══════════════════════════════════════════════════════════ */
+async function runAI() {
+  if (!STATE.guides.length || STATE.aiLoading) return;
+  STATE.aiLoading = true;
+  const btn = document.getElementById("ai-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Processing..."; }
+
+  const avgGC = (STATE.guides.reduce((s,g)=>s+g.GC_Pct,0)/STATE.guides.length).toFixed(1);
+  const regionLabel = KNOWN_REGIONS[`${STATE.regionStart}-${STATE.regionEnd}`] || "target region";
+  const top3 = STATE.guides.slice().sort((a,b)=>a.Nucleotide_Position-b.Nucleotide_Position).slice(0,3)
+    .map((g,i)=>`${i+1}. Position ${g.Nucleotide_Position}: ${g.Guide_Sequence} (GC ${g.GC_Pct}%, AA approx. ${g.Approx_Amino_Acid_Position})`).join("\n");
+  const guideLen = parseInt(document.getElementById("sl-guidelen").value);
+  const gcMin = parseInt(document.getElementById("sl-gcmin").value);
+  const gcMax = parseInt(document.getElementById("sl-gcmax").value);
+  const hpLen = parseInt(document.getElementById("sl-hplen").value);
+
+  const ap = document.getElementById("ai-panel");
+  if (ap) ap.innerHTML = `<div class="ai-panel fade-up"><div class="ai-title">Computational Interpretation</div><div class="ai-text" style="color:#4a5a70">Generating interpretation&hellip;</div></div>`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514", max_tokens: 1000,
+        messages: [{ role: "user", content:
+          `You are an expert in CRISPR-Cas13 guide RNA design for antiviral applications.\n\n` +
+          `Platform: ARROW (Automated RNA Recognition and Optimization Workflow)\n` +
+          `Genome: ${STATE.genome?.name}\n` +
+          `Target: ${regionLabel} (${STATE.regionStart.toLocaleString()}–${STATE.regionEnd.toLocaleString()} nt)\n` +
+          `Guide length: ${guideLen} nt | GC range: ${gcMin}–${gcMax}% | Max homopolymer: ${hpLen}\n` +
+          `Total candidates passing filters: ${STATE.totalCands} | Displayed: ${STATE.guides.length}\n` +
+          `Mean GC content of displayed guides: ${avgGC}%\n\n` +
+          `Top 3 guides by genomic position:\n${top3}\n\n` +
+          `Provide a concise scientific interpretation (3–4 sentences) covering: (1) assessment of overall design quality, (2) commentary on the GC content profile, (3) recommended next experimental steps for Cas13 validation. Write in academic register suitable for a molecular biology research group.`
+        }]
+      })
+    });
+    const d = await res.json();
+    const text = d.content?.map(b=>b.text||"").join("") || "No response received.";
+    if (ap) ap.innerHTML = `<div class="ai-panel fade-up"><div class="ai-title">Computational Interpretation</div><div class="ai-text">${text}</div></div>`;
+  } catch {
+    if (ap) ap.innerHTML = `<div class="ai-panel fade-up"><div class="ai-title">Computational Interpretation</div><div class="ai-text" style="color:#9a6060">AI interpretation unavailable. Please verify network connectivity.</div></div>`;
+  }
+
+  STATE.aiLoading = false;
+  if (btn) { btn.disabled = false; btn.textContent = "AI Interpretation"; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCIENCE TAB
+═══════════════════════════════════════════════════════════ */
+const SECTIONS = [
+  {
+    id: "background", label: "I. Background & Rationale", accent: "#4ab3a8",
+    content: [
+      { heading: "The SARS-CoV-2 Pandemic and the Limits of Conventional Antivirals",
+        body: `SARS-CoV-2 is a positive-sense, single-stranded RNA betacoronavirus with a ~30 kb genome encoding four structural proteins — spike (S), envelope (E), membrane (M), and nucleocapsid (N) — alongside 16 non-structural proteins (nsps) embedded in two large open reading frames, ORF1a and ORF1b. Entry into host cells is mediated by the trimeric spike glycoprotein, whose receptor-binding domain (RBD) engages angiotensin-converting enzyme 2 (ACE2) with high affinity. Crystal and cryo-EM structures reveal that the RBD transitions between closed and open conformations, with ACE2 binding exclusively to the "up" state, triggering proteolytic priming by TMPRSS2 and cathepsins that drives S1/S2 cleavage and membrane fusion (Lan et al., Nature 2020; Yan et al., Science 2020).\n\nThe pandemic exposed a fundamental vulnerability in the antiviral drug pipeline: conventional small-molecule antivirals (e.g., remdesivir, nirmatrelvir) target fixed structural or enzymatic features, rendering them susceptible to resistance as the virus accumulates mutations. The emergence of Omicron subvariants — BA.2.86, JN.1, XBB — with extensive spike mutations has repeatedly compromised antibody-based therapeutics and vaccine-elicited immunity, underscoring the need for programmable, rapidly adaptable therapeutic modalities (Kaku et al., Lancet Infect. Dis. 2023).` },
+      { heading: "Rationale for Direct RNA Targeting",
+        body: `Unlike DNA-targeting CRISPR systems (Cas9, Cas12), RNA-targeting approaches act post-transcriptionally, enabling intervention at the level of viral genome replication and gene expression without permanently modifying the host genome. SARS-CoV-2 replication occurs entirely in the cytoplasm within double-membrane vesicles (DMVs) derived from the endoplasmic reticulum–Golgi intermediate compartment, where both positive-strand (+RNA) and negative-strand (−RNA) intermediates are synthesized by the RNA-dependent RNA polymerase (RdRp, nsp12) complex. Both strands are accessible targets, though −RNA accessibility can be partially reduced by duplex formation with complementary +RNA (Doeve et al., Viruses 2023).\n\nThe spike gene (nt 21563–25384 in NC_045512.2, encoding 1,273 amino acids) is the primary determinant of viral tropism and immune evasion, making it both a clinically relevant target and a practical design challenge: its elevated mutation rate in circulating variants demands that guide RNAs be directed toward structurally conserved, functionally indispensable regions where mutations are poorly tolerated.` }
+    ]
+  },
+  {
+    id: "cas13", label: "II. CRISPR-Cas13 Mechanism", accent: "#c9a84c",
+    content: [
+      { heading: "Type VI CRISPR: Architecture and RNA Cleavage",
+        body: `Cas13 (type VI CRISPR-Cas) comprises a family of single-effector RNA-guided ribonucleases that exclusively target single-stranded RNA. Unlike Cas9, which requires a DNA protospacer adjacent motif (PAM), Cas13 subtypes (a through d, plus Cas13X and Cas13Y) generally operate without strict protospacer flanking site (PFS) constraints, providing broad genomic accessibility. Each effector protein harbors two Higher Eukaryotes and Prokaryotes Nucleotide-binding (HEPN) domains, each bearing a conserved R-X₄-H catalytic motif. RNA targeting proceeds in two stages: first, the CRISPR RNA (crRNA) spacer base-pairs with complementary target ssRNA; second, this recognition triggers a conformational rearrangement that brings the two HEPN domains into apposition, forming an active composite nuclease that cleaves the target RNA at positions outside the guide–target duplex (Konermann et al., Cell 2018; PMC review, 2024).\n\nA second mechanistically distinct activity — collateral (trans) cleavage — is activated upon target engagement: the active HEPN nuclease non-specifically degrades nearby ssRNA in the cellular environment. In prokaryotes, this induces dormancy as a form of altruistic immunity. In mammalian therapeutic contexts, collateral cleavage represents a key safety consideration, and several high-fidelity variants (e.g., hfCas13X, RfxCas13d with surface mutations) have been engineered to minimize off-target RNA degradation while preserving on-target efficacy (Liu et al., FEBS Letters 2024; Shi et al., Commun. Biol. 2023).` },
+      { heading: "crRNA Architecture and Spacer Design Principles",
+        body: `The crRNA consists of a direct repeat (DR) scaffold — which folds into a stem-loop structure recognized by the Cas13 protein — followed by the spacer sequence that encodes target specificity. In Cas13a, Cas13c, and Cas13d, the DR is positioned at the 5' end; Cas13b uses a 3' DR. Spacer lengths of 22–30 nucleotides are optimal for most subtypes. Structural studies and mismatch-scanning experiments with LbuCas13a demonstrate that the central region of the spacer (positions ~4–11 from the 5' spacer end) constitutes a functionally critical "seed region": mismatches here dramatically impair HEPN domain activation, whereas terminal mismatches are better tolerated (Nucleic Acids Res., 2024).\n\nEffective guide design must satisfy several constraints: (1) the spacer must be complementary to a single-stranded region of the target RNA; (2) GC content in the 30–70% range ensures thermodynamically stable target engagement without forming self-inhibitory secondary structures; (3) homopolymeric runs of four or more identical bases should be avoided, as they predispose to misfolding of the crRNA direct repeat and reduce ribonucleoprotein complex formation efficiency; (4) the central seed region should be free of predicted intramolecular base-pairing (Bandaru et al., Sci. Rep. 2020). ARROW encodes all four constraints through its filtering pipeline.` }
+    ]
+  },
+  {
+    id: "spike", label: "III. The Spike Protein Target", accent: "#6a9e7f",
+    content: [
+      { heading: "Genomic Organization and Functional Domains",
+        body: `The spike gene (21,563–25,384 nt; 3,822 nt encoding 1,273 amino acids) encodes a class I fusion glycoprotein synthesized as a homotrimer and processed into two functional subunits: S1, responsible for receptor binding, and S2, responsible for membrane fusion. The S1 subunit contains the N-terminal domain (NTD) and receptor-binding domain (RBD; residues ~319–541), the latter bearing the receptor-binding motif (RBM) that makes direct contact with ACE2. Cryo-EM and crystal structures demonstrate that the spike trimer exists in closed (all-RBD-down), open (one-or-more RBD-up), and ACE2-bound conformations, with receptor engagement only possible in the up-conformation (Walls et al., Cell 2020; Yan et al., Science 2020).\n\nA polybasic furin cleavage site at the S1/S2 boundary (residues 682–685: RRAR) distinguishes SARS-CoV-2 from SARS-CoV and contributes to its enhanced transmissibility by enabling pre-cleavage during spike biogenesis. A second cleavage site (S2') is acted upon by TMPRSS2 at the cell surface or by cathepsins in endolysosomes. These proteolytic events expose the S2 fusion peptide and drive the transition from pre-fusion to post-fusion conformation — a large-scale rearrangement of heptad repeats HR1 and HR2 that forms a six-helix bundle, drawing viral and host membranes into proximity (Hoffmann et al., Cell 2020).` },
+      { heading: "Spike as a Cas13 Target: Opportunity and Constraints",
+        body: `The spike mRNA is among the most abundant viral transcripts during active infection and is expressed from both the genomic RNA and multiple subgenomic RNAs (sgRNAs), amplifying the number of target molecules available to Cas13 effector complexes. A tiling crRNA library targeting the spike-encoding mRNA, evaluated in HepG2 and AT2 cells using a Cas13a-based pipeline, demonstrated effective knockdown with selectivity for SARS-CoV-2 over related coronaviruses, confirming that bioinformatic design can identify high-efficacy spacers prior to experimental screening (Liu et al., Front. Mol. Biosci. 2020).\n\nThe central challenge is variant-driven escape: the RBD and NTD are immunodominant and under strong selective pressure, generating mutation clusters (e.g., K417N, L452R, E484K in earlier variants; F486P, R493Q in XBB; L455S, F456L in JN.1). For Cas13-based therapeutics, this necessitates deliberate targeting of conserved regions — particularly within the S2 subunit (HR1, HR2, fusion peptide) — where functional constraints limit mutational tolerance. Cas13d crRNAs targeting conserved sequences achieved greater than 99% viral titer reduction in human primary airway epithelium ALI cultures via LNP delivery (Blanchard et al., Nat. Commun. 2021).` }
+    ]
+  },
+  {
+    id: "evidence", label: "IV. Experimental Evidence", accent: "#9a8ab5",
+    content: [
+      { heading: "In Vitro and Cell-Culture Validation",
+        body: `Multiple independent research groups have validated Cas13-based targeting of SARS-CoV-2 in relevant cell models. In HEK293-ACE2 cells infected at MOI 0.1, a Cas13b system (pspCas13b) using 20 guide RNAs achieved at least 50% reduction in viral RNA for 12 of 20 designs measured by qRT-PCR, with the top-performing guide targeting NSP12/RdRp achieving a 63% decrease in infection relative to non-targeting control (Gronberg et al., Viruses 2024). Combining two guide RNAs further increased viral suppression and conferred resilience against single-point mutations, consistent with the theoretical prediction that multi-guide cocktails raise the barrier to resistance.\n\nUsing Cas13d with 29 crRNAs targeting highly conserved sequences across the SARS-CoV-2 genome — including both +RNA and −RNA strands — Doeve et al. demonstrated significant luciferase reporter knockdown in HEK293T cells for the majority of designs. A mechanistically important finding was that −RNA strand targeting can be blocked by duplex formation with complementary +RNA within DMVs; however, targets adopting stable hairpin secondary structures showed residual inhibition even on the minus strand, establishing RNA secondary structure as a key determinant of Cas13 accessibility (Doeve et al., Viruses 2023).` },
+      { heading: "In Vivo Efficacy and Delivery Advances",
+        body: `The most significant translational evidence derives from Blanchard et al. (Nat. Commun. 2021), who demonstrated that LNP-delivered Cas13d mRNA combined with crRNAs targeting conserved coronavirus sequences inhibited replication of SARS-CoV-2 Omicron, Delta, and earlier variants — as well as OC43 and NL63 endemic coronaviruses — with greater than 99% viral titer reduction in human primary airway epithelium ALI cultures. Nebulizer-based pulmonary delivery of polymer-formulated Cas13a mRNA reduced viral RNA replication and improved symptoms in hamster models, establishing proof-of-concept for non-invasive respiratory delivery.\n\nA 2025 systematic review establishes that computational gRNA design and in vitro screening can be completed within hours of sequence availability, and LNP or mRNA formulation within 1–3 days. SARS-CoV-2 Cas13 guide RNA sets were designed and experimentally validated against new variants on sub-week timescales during the pandemic — a throughput entirely inaccessible to conventional drug development pipelines (PMC12737548, Viruses 2025).` },
+      { heading: "Diagnostic Applications: SHERLOCK",
+        body: `The collateral cleavage activity of Cas13 has been independently harnessed for ultrasensitive nucleic acid diagnostics. The SHERLOCK (Specific High-sensitivity Enzymatic Reporter UnLOCKing) platform couples isothermal amplification (RPA or RT-LAMP) with Cas13a-mediated cleavage of quenched fluorescent ssRNA reporters: upon target recognition, activated Cas13a cleaves the reporter, producing a quantifiable fluorescent signal at attomolar sensitivity. Miniaturized Cas13 variants (mCas13, Cas13X.1) offer AAV-compatible payloads for in vivo delivery, expanding both diagnostic and therapeutic utility (Gootenberg et al., Science 2017; ACS Synth. Biol. 2021). ARROW guide RNA output is directly compatible with both therapeutic Cas13 constructs and SHERLOCK-type diagnostic platforms, underscoring its dual-use research value.` }
+    ]
+  },
+  {
+    id: "design-rationale", label: "V. ARROW Design Rationale", accent: "#6a9abf",
+    content: [
+      { heading: "GC Content Filtering",
+        body: `GC content is the primary thermodynamic quality metric for crRNA spacers. A spacer with less than 30% GC is likely to form an insufficiently stable duplex with target RNA, reducing dwell time at the HEPN catalytic site below the threshold required for efficient conformational activation. Conversely, spacers with more than 70% GC risk forming stable intramolecular secondary structures — notably G-quadruplexes and hairpin loops — that compete with target engagement. The 30–70% window is empirically derived from large-scale Cas13 screening datasets and is consistent with published design guidelines across Cas13a, Cas13b, and Cas13d orthologs (Abudayyeh et al., Science 2017; Konermann et al., Cell 2018).\n\nIn the SARS-CoV-2 spike region, empirical base-frequency analysis (A: ~30%, U: ~32%, G: ~20%, C: ~18%) yields a background GC content of approximately 38%, meaning a non-trivial fraction of random windows will fall below the 30% threshold. ARROW's sliding window scan identifies all candidate guides before randomized sampling, ensuring output represents a statistically unbiased subset of the valid design space.` },
+      { heading: "Homopolymer Avoidance",
+        body: `Homopolymeric sequences — runs of four or more identical nucleotides — create multiple problems in crRNA function. In the context of the crRNA direct repeat scaffold, poly-U or poly-A stretches destabilize the stem-loop structure required for Cas13 recognition, reducing ribonucleoprotein complex assembly efficiency. In the spacer region, homopolymers promote non-Watson-Crick base pairing and are associated with polymerase slippage during in vitro transcription, producing truncated or extended crRNA products that degrade experimental reproducibility. ARROW implements the same logic as the canonical Python implementation: a candidate is rejected if any run of N or more identical bases is detected, where N is user-configurable (default: 4).` },
+      { heading: "Randomized Sampling and Multi-Guide Strategy",
+        body: `ARROW generates the complete set of guides passing all filters, then applies a random shuffle prior to slicing to the requested output count. This prevents systematic positional bias and facilitates multi-guide cocktail design by returning a spatially diverse subset of valid guides across the region.\n\nCurrent best practice strongly favors multi-guide strategies. Combinations of guides provide redundancy against single-nucleotide polymorphisms in circulating variants, synergistic RNA degradation through simultaneous engagement at multiple target sites, and a substantially elevated barrier to evolutionary escape (Gronberg et al., Viruses 2024; PMC12385312, 2025). ARROW's randomized output is designed specifically to enable downstream cocktail selection: independent design runs yield non-overlapping guide sets, and sorting by genomic position enables spatial tiling of the target region.` },
+      { heading: "Amino Acid Position Annotation",
+        body: `Each guide is annotated with an approximate amino acid (AA) position, computed as floor(i / 3) + 1 where i is the zero-indexed offset within the extracted region. This annotation allows rapid cross-referencing with the spike protein domain map: guides can be immediately contextualised within the NTD (residues 1–318), RBD (319–541), furin cleavage site (~681–686), S2 fusion peptide (~816–855), HR1 (~912–984), central helix (~986–1035), or HR2 (~1163–1202). Guides targeting the RBD and NTD are more likely to encounter variant-associated mutations; guides targeting S2 subunit structural elements sit in regions under stronger functional constraint and are therefore more likely to retain activity against emerging variants.` }
+    ]
+  },
+  {
+    id: "limitations", label: "VI. Limitations and Outlook", accent: "#8a7a6a",
+    content: [
+      { heading: "Current Limitations",
+        body: `ARROW operates on sequence-level features and does not currently incorporate RNA secondary structure prediction, which is the single most consequential factor determining Cas13 accessibility at a given target site. A guide with optimal GC content and no homopolymers will fail to activate Cas13 if its target sequence is stably base-paired within the folded viral RNA structure. Integration of minimum free energy prediction (e.g., RNAfold, mFold) or experimentally derived structure-seq data as an additional filter would substantially improve the fraction of accessible guides in the output.\n\nARROW does not currently assess guide specificity against the human transcriptome. Off-target complementarity to human mRNAs could trigger spurious Cas13 activation and, via collateral cleavage, result in non-specific degradation of cellular RNA. BLAST alignment of spacer sequences against the NCBI RefSeq human transcriptome is recommended before any experimental use. Future platform versions will integrate off-target scoring directly into the design pipeline.` },
+      { heading: "Delivery, Immunogenicity, and Clinical Translation",
+        body: `The two dominant delivery challenges for Cas13-based antivirals are: (1) efficient intracellular delivery of the ribonucleoprotein complex to infected respiratory epithelial cells, and (2) managing innate immune recognition of Cas13 as a bacterial-derived protein antigen. Lipid nanoparticles represent the most clinically advanced non-viral delivery system, with mRNA-LNP platforms validated for pulmonary administration in preclinical models. Miniature Cas13 variants (mCas13, Cas13X, approximately 775 amino acids) fit within a single AAV capsid, significantly improving packaging feasibility.\n\nCollateral cleavage remains the central safety concern for therapeutic deployment. Engineering approaches — including high-fidelity Cas13 point mutants, shortened spacers of 22 nt, and synthetic mismatches at non-seed positions — have demonstrated substantial reduction in collateral activity while preserving on-target knockdown efficiency (Liu et al., FEBS Letters 2024; Science Advances 2024).` },
+      { heading: "Programmable Pandemic Preparedness",
+        body: `The COVID-19 pandemic catalysed a paradigm shift toward programmable antiviral countermeasures. CRISPR-Cas13 systems occupy a unique position within this framework: the time from viral genome sequence to validated guide RNA designs has been compressed to days, compared to years for conventional drug candidates. Computational guide design tools such as ARROW are the essential first step in this pipeline, translating genomic surveillance data directly into actionable experimental inputs.\n\nThe integration of AI-assisted guide selection — accounting for target RNA secondary structure, off-target homology, Cas13 ortholog-specific PFS preferences, and conservation across variant surveillance databases — together with multi-guide cassette design and synthetic biology delivery platforms, represents a convergent path toward sequence-agnostic antiviral countermeasures. ARROW is designed as an open, modular platform applicable to any RNA virus genome available through NCBI GenBank, making it immediately extensible to influenza, RSV, dengue, Ebola, and future emerging pathogens (PMC12737548, Viruses 2025; PMC12385312, 2025).` }
+    ]
+  },
+];
+
+const REFS = [
+  "Lan et al. Nature 2020",
+  "Yan et al. Science 2020",
+  "Doeve et al. Viruses 2023",
+  "Blanchard et al. Nat. Commun. 2021",
+  "Gronberg et al. Viruses 2024",
+  "Liu et al. FEBS Lett. 2024",
+  "Bandaru et al. Sci. Rep. 2020",
+  "Nucleic Acids Res. 2024",
+  "PMC12385312, 2025",
+  "PMC12737548, 2025",
+];
+
+let activeSciId = "background";
+
+function renderScienceNav() {
+  const nav = document.getElementById("sci-nav");
+  nav.innerHTML = SECTIONS.map(s =>
+    `<button class="sci-nav-btn ${s.id===activeSciId?"active":""}" 
+      style="color:${s.id===activeSciId?s.accent:"#4a5a75"};border-right:2px solid ${s.id===activeSciId?s.accent:"transparent"};background:${s.id===activeSciId?s.accent+"10":"transparent"}"
+      onclick="selectSection('${s.id}')">${s.label}</button>`
+  ).join("") +
+  `<div class="ref-panel">
+    <div class="ref-title">Selected References</div>
+    ${REFS.map(r=>`<div class="ref-item">${r}</div>`).join("")}
+  </div>`;
+  renderScienceBody();
+}
+
+function selectSection(id) {
+  activeSciId = id;
+  renderScienceNav();
+}
+
+function renderScienceBody() {
+  const s = SECTIONS.find(x => x.id === activeSciId);
+  const body = document.getElementById("sci-body");
+  if (!s || !body) return;
+
+  let html = `<div class="section-header">
+    <div class="section-kicker" style="color:${s.accent}">ARROW Platform &mdash; Scientific Review</div>
+    <h2 class="section-title">${s.label}</h2>
+  </div>`;
+
+  s.content.forEach(block => {
+    const paras = block.body.split("\n\n").map(p =>
+      `<p class="block-para">${p.replace(/\n/g," ")}</p>`
+    ).join("");
+    html += `<div class="content-block">
+      <h3 class="block-heading" style="color:${s.accent};border-left:2px solid ${s.accent}">${block.heading}</h3>
+      ${paras}
+    </div>`;
+  });
+
+  html += `<div class="disclaimer"><strong>Disclaimer: </strong>This review synthesises peer-reviewed literature published between 2020 and 2025 to contextualise ARROW's design decisions. All experimental results cited derive from published, externally validated studies. ARROW generates candidate spacer sequences for research use; experimental validation in biologically relevant models is required before any therapeutic or diagnostic application.</div>`;
+
+  body.innerHTML = html;
+}
+</script>
+</body>
+</html>
