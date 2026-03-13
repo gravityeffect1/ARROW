@@ -629,13 +629,22 @@ function updateFilterSummary() {
 }
 
 
+const TAB_CONFIG = { design: 0, science: 1 };
+
 function switchTab(tab) {
-  document.querySelectorAll(".tab-btn").forEach((b,i) => {
-    b.classList.toggle("active", (i===0&&tab==="design")||(i===1&&tab==="science"));
+  const tabIndex = TAB_CONFIG[tab];
+  if (tabIndex === undefined) return;
+
+  document.querySelectorAll(".tab-btn").forEach((b, i) => {
+    b.classList.toggle("active", i === tabIndex);
   });
-  document.getElementById("tab-design").style.display = tab==="design" ? "grid" : "none";
-  document.getElementById("tab-science").style.display = tab==="science" ? "block" : "none";
-  if (tab === "science" && !document.getElementById("sci-nav").children.length) renderScienceNav();
+  
+  document.getElementById("tab-design").style.display = tab === "design" ? "grid" : "none";
+  document.getElementById("tab-science").style.display = tab === "science" ? "block" : "none";
+  
+  if (tab === "science" && !document.getElementById("sci-nav").children.length) {
+    renderScienceNav();
+  }
 }
 
 
